@@ -2227,7 +2227,7 @@ full values render out correctly:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "increase(http_requests_count{app.kubernetes.io/name=\"juiceshop\", team=\"$team\"}[1m])",
+                  "expr": "increase(http_requests_count{app=\"juiceshop\", team=\"$team\"}[1m])",
                   "interval": "1m",
                   "legendFormat": "{{status_code}}",
                   "refId": "A"
@@ -2913,7 +2913,7 @@ full values render out correctly:
               },
               "targets": [
                 {
-                  "expr": "{app.kubernetes.io/name=\"juice-shop\", team=\"$team\"}",
+                  "expr": "{app=\"juice-shop\", team=\"$team\"}",
                   "refId": "A"
                 }
               ],

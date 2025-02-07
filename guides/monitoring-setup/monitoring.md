@@ -16,13 +16,17 @@ echo "Installing prometheus-operator"
 wget https://raw.githubusercontent.com/juice-shop/multi-juicer/main/guides/monitoring-setup/prometheus-operator-config.yaml
 
 echo "Installing Prometheus Operator & Grafana"
-helm --namespace monitoring upgrade --install monitoring prometheus-community/kube-prometheus-stack --version 13.3.0 --values prometheus-operator-config.yaml
+helm --namespace monitoring upgrade --install monitoring prometheus-community/kube-prometheus-stack --version 65.5.1 --values prometheus-operator-config.yaml
+
+echo "Getting loki configuration"
+# The default loki config is set to monolithic single replica. If more redundancy is needed you can reconfigure it to your liking. https://grafana.com/docs/loki/latest/setup/install/helm/concepts/
+wget https://raw.githubusercontent.com/juice-shop/multi-juicer/main/guides/monitoring-setup/loki-monitoring-config.yaml
 
 echo "Installing loki"
-helm --namespace monitoring upgrade --install loki grafana/loki --version 2.3.0 --set="serviceMonitor.enabled=true"
+helm --namespace monitoring upgrade --install loki grafana/loki --version 6.18.0 --values loki-monitoring-config.yaml
 
 echo "Installing loki/promtail"
-helm --namespace monitoring upgrade --install promtail grafana/promtail --version 3.0.4 --set "config.lokiAddress=http://loki:3100/loki/api/v1/push" --set="serviceMonitor.enabled=true"
+helm --namespace monitoring upgrade --install promtail grafana/promtail --version 6.16.6 --set="serviceMonitor.enabled=true" --set="config.clients[0].url=http://loki-gateway/loki/api/v1/push,config.clients[0].tenant_id=multijuicer" --set="config.snippets.extraRelabelConfigs[0].action=labelmap,config.snippets.extraRelabelConfigs[0].regex=__meta_kubernetes_pod_label_(team)"
 
 echo "Installing MultiJuicer"
 helm install multi-juicer oci://ghcr.io/juice-shop/multi-juicer/helm/multi-juicer --set="balancer.metrics.enabled=true" --set="balancer.metrics.dashboards.enabled=true" --set="balancer.metrics.serviceMonitor.enabled=true"
